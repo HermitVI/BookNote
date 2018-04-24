@@ -10,12 +10,11 @@ create table usuario(
     primary key(id)
 ); -- select * from usuario;
 
-INSERT INTO usuario VALUES (null,'aaa','111');
-INSERT INTO usuario VALUES (null,'bbb','222');
-INSERT INTO usuario VALUES (null,'ccc','333');
-INSERT INTO usuario VALUES (null,'ddd','444');
-INSERT INTO usuario VALUES (null,'eee','555');
-INSERT INTO usuario VALUES (null,'fff','666');
+insert into usuario value(null,"admin","admin");
+insert into usuario value(null,"jperez","12perez");
+insert into usuario value(null,"cherna","12cherna");
+insert into usuario value(null,"fbarrera","12fbarrera");
+
 
 create table apoderado (
     id int auto_increment,
@@ -23,9 +22,10 @@ create table apoderado (
     apellido varchar (50),
     id_usuario INT,
     primary key (id),
-    foreign key (id_usuario) references usuario(id)    
+    foreign key(id_usuario) references usuario(id)    
 ); -- select * from apoderado;
-INSERT INTO apoderado VALUES (null,'mama','luchona','3');
+
+insert into apoderado value(null,"Juan","Perez",2);
 
 create table docente (
     id int auto_increment,
@@ -33,97 +33,86 @@ create table docente (
     apellido varchar (50),
     id_usuario INT,
     primary key (id),
-    foreign key (id_usuario) references usuario(id)  
+    foreign key(id_usuario) references usuario(id)  
 ); -- select * from docente;
 
-INSERT INTO docente VALUES (null,'tio','bkn','2');
+INSERT INTO docente VALUES (null,"Carlos","Hernandez",3);
+
+create table asistencia (
+    id int auto_increment,
+    fecha datetime,
+    asistio boolean,
+    primary key (id)
+);
+
+insert into asistencia value(null,now(),true);
+insert into asistencia value(null,now(),false);
 
 create table alumno (
     id int auto_increment,
     nombre varchar (50),
     apellido varchar (50),
+    id_apoderado int,
     id_usuario INT,
     primary key (id),
-    foreign key (id_usuario) references usuario(id)  
+    foreign key(id_apoderado) references apoderado(id), 
+    foreign key(id_usuario) references usuario(id)  
 ); -- select * from alumno;
 
-INSERT INTO alumno VALUES (null,'franco','Barrera','1');
-INSERT INTO alumno VALUES (null,'test1','prueba1','1');
-INSERT INTO alumno VALUES (null,'test2','prueba2','1');
-INSERT INTO alumno VALUES (null,'test3','prueba3','1');
-
+INSERT INTO alumno VALUES (null,'franco','Barrera',1,4);
 -- INSERT INTO nota VALUES ();
+
 create table asignatura (
     id int auto_increment,
     nombre varchar (100),
     id_docente INT,
+    asistencia INT,
     primary key (id),
-    foreign key (id_docente) references docente(id)  
+    foreign key(id_docente) references docente(id)  
 ); -- select * from asignatura;
 
-INSERT INTO asignatura VALUES (null,'matematica','1');
-INSERT INTO asignatura VALUES (null,'lenguaje','1');
+insert into asignatura value(null,"calculo",1,90);
+
 
 create table asignatura_alumno (
-	id int auto_increment,
+    id int auto_increment,
     id_asignatura int,
     id_alumno int,
+    id_asistencia INT,
     primary key (id),
-    foreign key (id_asignatura) references asignatura(id),
-    foreign key (id_alumno) references alumno(id)     
+    foreign key(id_asignatura) references asignatura(id),
+    foreign key(id_asistencia) references asistencia(id),
+    foreign key(id_alumno) references alumno(id)     
 );
-INSERT INTO asignatura_alumno VALUES (null,'1','1');
-INSERT INTO asignatura_alumno VALUES (null,'2','1');
-INSERT INTO asignatura_alumno VALUES (null,'1','2');
-INSERT INTO asignatura_alumno VALUES (null,'1','3');
-INSERT INTO asignatura_alumno VALUES (null,'2','4');
 
--- Cada nota posee un valor y un porcentaje.
-create table nota(
+INSERT INTO asignatura_alumno VALUES (null,1,1,1);
+INSERT INTO asignatura_alumno VALUES (null,1,1,2);
+
+create table prueba(
     id int auto_increment,
-	valor float,	-- resultado int,
+    nombre varchar(50),
+    nota float,
     porcentaje float,
-    id_asignatura_alumno int,
-	primary key (id),
-    foreign key (id_asignatura_alumno) references asignatura_alumno(id)  
-); -- select * from nota;
+    id_asignatura int,
+    id_alumno int,
+    primary key(id),
+    foreign key(id_asignatura) references asignatura(id),
+    foreign key(id_alumno) references alumno(id)
+);
 
+insert into prueba value(null,"prueba 1",5.5,0.25,1,1);
 
-INSERT INTO nota VALUES (null,'6.5','0.3','1');
-INSERT INTO nota VALUES (null,'7','0.3','1');
-INSERT INTO nota VALUES (null,'3.2','0.4','1');
-INSERT INTO nota VALUES (null,'6.5','0.6','5');
-INSERT INTO nota VALUES (null,'7','0.4','5');
-INSERT INTO nota VALUES (null,'4','0.3','2');
-INSERT INTO nota VALUES (null,'5','0.3','2');
-INSERT INTO nota VALUES (null,'6','0.4','2');
-INSERT INTO nota VALUES (null,'3','0.3','3');
-INSERT INTO nota VALUES (null,'3','0.3','3');
-INSERT INTO nota VALUES (null,'3','0.4','3');
-INSERT INTO nota VALUES (null,'5.5','0.6','4');
-INSERT INTO nota VALUES (null,'6.6','0.4','4');
-
-create table asistencia (
-    id int auto_increment,
-    fecha datetime,
-    atrasado boolean,
-    id_asignatura_alumno int,
-    primary key (id),
-    foreign key (id_asignatura_alumno) references asignatura_alumno(id)  
-); -- select * from asistencia;
-
-INSERT INTO asistencia VALUES (null,CURDATE(),false,'1');
 
 create table mensaje (
     id int auto_increment,
-    texto varchar (100),
+    texto varchar (500),
     fecha datetime,
     id_asignatura int,
     primary key (id),
-    foreign key (id_asignatura) references asignatura(id)    
+    foreign key(id_asignatura) references asignatura(id)    
 ); -- select * from mensaje;
 
-INSERT INTO mensaje VALUES (null,'me da un completo',NOW(),'1');
+INSERT INTO mensaje VALUES (null,'me da un completo',NOW(),1);
 
 
 /* Como hacer el procedimiento en MYSQL:
@@ -141,7 +130,7 @@ DELIMITER ;
 --       ----------------------------------------------------------------------------------------------------------------
 
 -- INSERTA NOTA pidiendo los ID del alumno, asignatura, la nota y su ponderacion, asumiendo que estamos en el USUARIO de un DOCENTE
-DELIMITER $$
+/*DELIMITER $$
 CREATE PROCEDURE insertar_nota(alumno_fk INT, asignatura_fk INT, nota_nueva FLOAT, ponderacion FLOAT)-- DROP PROCEDURE insertar_nota
 BEGIN
 	DECLARE destinatario INT;
@@ -280,5 +269,5 @@ DELIMITER ;
 
 CALL revizar_mensajes ('2');
 			
-			
+			*/
 
