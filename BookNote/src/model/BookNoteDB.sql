@@ -10,10 +10,10 @@ create table usuario(
     primary key(id)
 ); -- select * from usuario;
 
-insert into usuario value(null,"admin","admin");
-insert into usuario value(null,"jperez","12perez");
-insert into usuario value(null,"cherna","12cherna");
-insert into usuario value(null,"fbarrera","12fbarrera");
+insert into usuario value(null,"admin", AES_ENCRYPT ("admin", "llave"));
+insert into usuario value(null,"jperez", AES_ENCRYPT ("12perez", "llave"));
+insert into usuario value(null,"cherna", AES_ENCRYPT ("12cherna", "llave"));
+insert into usuario value(null,"fbarrera", AES_ENCRYPT ("12fbarrera", "llave"));
 
 
 create table apoderado (
